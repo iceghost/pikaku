@@ -8,9 +8,15 @@ class ProtoTile:
         self.left = False
         self.visited = False
 
+    def rotate_right(self):
+        self.up, self.right, self.down, self.left = self.left, self.up, self.right, self.down
+
 class Tile:
     rotation = 0
     MAX_ROTATION: int
+
+    def __init__(self):
+        raise NotImplementedError()
 
     @staticmethod
     def from_prototile(prototile: ProtoTile) -> 'Tile':
@@ -54,12 +60,15 @@ class Tile:
     def right(self) -> bool:
         raise NotImplementedError()
 
+    def to_char(self) -> str:
+        raise NotImplementedError()
+
 class EndPipe(Tile):
     class Orient(IntEnum):
         UP = 0
-        LEFT = 1
+        RIGHT = 1
         DOWN = 2
-        RIGHT = 3
+        LEFT = 3
 
     def __init__(self, orient: Orient):
         self.orient = orient
@@ -79,6 +88,10 @@ class EndPipe(Tile):
 
     def right(self) -> bool:
         return self.orient == self.Orient.RIGHT
+
+    def to_char(self) -> str:
+        charset = "╨╞╥╡"
+        return charset[self.orient]
 
 class LongPipe(Tile):
     class Orient(IntEnum):
@@ -102,6 +115,10 @@ class LongPipe(Tile):
 
     def right(self) -> bool:
         return self.orient == self.Orient.HORIZONTAL
+
+    def to_char(self) -> str:
+        charset = "║═"
+        return charset[self.orient]
 
 class CornerPipe(Tile):
     class Orient(IntEnum):
@@ -133,12 +150,16 @@ class CornerPipe(Tile):
         # 1 or 2
         return ((self.orient + 1) % 4) // 2 == 1
 
+    def to_char(self) -> str:
+        charset = "╝╚╔╗"
+        return charset[self.orient]
+
 class SplitPipe(Tile):
     class Orient(IntEnum):
         UP = 0
-        LEFT = 1
+        RIGHT = 1
         DOWN = 2
-        RIGHT = 3
+        LEFT = 3
 
     def __init__(self, orient: Orient):
         self.orient = orient
@@ -158,3 +179,7 @@ class SplitPipe(Tile):
 
     def right(self) -> bool:
         return self.orient != self.Orient.LEFT
+
+    def to_char(self) -> str:
+        charset = "╩╠╦╣"
+        return charset[self.orient]

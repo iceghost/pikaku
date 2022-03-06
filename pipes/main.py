@@ -1,3 +1,4 @@
+from board import Board
 from tile import ProtoTile, Tile
 
 tile = ProtoTile()
@@ -7,3 +8,6 @@ tile.right = True
 tile = Tile.from_prototile(tile)
 
 print(tile)
+
+board = Board.random(6)
+print(board)
