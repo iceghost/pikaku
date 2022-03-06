@@ -11,3 +11,5 @@ print(tile)
 
 board = Board.random(6)
 print(board)
+print(board.is_solved())
+print(len(board))
