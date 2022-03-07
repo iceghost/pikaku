@@ -12,7 +12,13 @@ class Board:
     def random(size: int) -> 'Board':
         protoboard = [[ProtoTile() for _ in range(0, size)] for _ in range(0, size)]
         visit(protoboard, 0, 0)
-        return Board([[Tile.from_prototile(col) for col in row] for row in protoboard])
+        board = Board([[Tile.from_prototile(col) for col in row] for row in protoboard])
+        for x in range(0, len(board)):
+            for y in range(0, len(board)):
+                tile = board.at(x, y)
+                for _ in range(0, random.randrange(0, tile.MAX_ROTATION - 1)):
+                    tile.rotate_right()
+        return board
 
     def __str__(self) -> str:
         return "\n".join(["".join([col.to_char() for col in row]) for row in self.board])
@@ -34,13 +40,13 @@ class Board:
             return 0
         visited[y][x] = True
         reachable = 1 # self count
-        if self.board[y][x].up() and self.board[y - 1][x].down():
+        if self.board[y][x].up() and y - 1 >= 0 and self.board[y - 1][x].down():
             reachable += self._reachable_from_help(x, y - 1, visited)
-        if self.board[y][x].right() and self.board[y][x + 1].left():
+        if self.board[y][x].right() and x + 1 < self.size and  self.board[y][x + 1].left():
             reachable += self._reachable_from_help(x + 1, y, visited)
-        if self.board[y][x].down() and self.board[y + 1][x].up():
+        if self.board[y][x].down() and y + 1 < self.size and self.board[y + 1][x].up():
             reachable += self._reachable_from_help(x, y + 1, visited)
-        if self.board[y][x].left() and self.board[y][x - 1].right():
+        if self.board[y][x].left() and x - 1 >= 0 and self.board[y][x - 1].right():
             reachable += self._reachable_from_help(x - 1, y, visited)
         return reachable
 
@@ -67,6 +73,4 @@ def visit(protoboard: List[List[ProtoTile]], x: int, y: int) -> bool:
             else:
                 protoboard[y][x].down = True
                 protoboard[y + dy][x + dx].up = True
-    for _ in range(0, random.randrange(0, 4)):
-        protoboard[y][x].rotate_right()
     return True

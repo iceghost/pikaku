@@ -8,8 +8,9 @@ class ProtoTile:
         self.left = False
         self.visited = False
 
-    def rotate_right(self):
+    def rotate_right(self) -> 'ProtoTile':
         self.up, self.right, self.down, self.left = self.left, self.up, self.right, self.down
+        return self
 
 class Tile:
     rotation = 0
@@ -44,6 +45,12 @@ class Tile:
     def rotate(self):
         self.rotation += 1
         self.rotate_right()
+
+    def unrotate(self):
+        self.rotation -= 1
+        assert(self.rotation >= 0)
+        for _ in range(0, self.MAX_ROTATION - 1):
+            self.rotate_right()
 
     def rotate_right(self) -> None:
         raise NotImplementedError()
