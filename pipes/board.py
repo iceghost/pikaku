@@ -17,7 +17,7 @@ class Board:
             for y in range(0, len(board)):
                 tile = board.at(x, y)
                 for _ in range(0, random.randrange(0, tile.MAX_ROTATION - 1)):
-                    tile.rotate_right()
+                    board.rotate(x, y)
         return board
 
     def __str__(self) -> str:
@@ -25,6 +25,9 @@ class Board:
 
     def at(self, x: int, y: int) -> Tile:
         return self.board[y][x]
+
+    def rotate(self, x: int, y: int):
+        self.board[y][x] = self.board[y][x].rotate()
 
     def __len__(self) -> int:
         return self.size

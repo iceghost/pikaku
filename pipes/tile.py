@@ -13,7 +13,6 @@ class ProtoTile:
         return self
 
 class Tile:
-    rotation = 0
     MAX_ROTATION: int
 
     def __init__(self):
@@ -42,17 +41,10 @@ class Tile:
 
         raise Exception("{} sides is illegal".format(sides))
 
-    def rotate(self):
-        self.rotation += 1
-        self.rotate_right()
+    def rotate(self, step: int = 1) -> 'Tile':
+        return self.rotate_right(step)
 
-    def unrotate(self):
-        self.rotation -= 1
-        assert(self.rotation >= 0)
-        for _ in range(0, self.MAX_ROTATION - 1):
-            self.rotate_right()
-
-    def rotate_right(self) -> None:
+    def rotate_right(self, step: int = 1) -> 'Tile':
         raise NotImplementedError()
 
     def up(self) -> bool:
@@ -81,8 +73,8 @@ class EndPipe(Tile):
         self.orient = orient
         self.MAX_ROTATION = 4
 
-    def rotate_right(self):
-        self.orient = (self.orient + 1) % 4
+    def rotate_right(self, step: int = 1):
+        return EndPipe(EndPipe.Orient((self.orient + step) % 4))
 
     def up(self) -> bool:
         return self.orient == self.Orient.UP
@@ -96,9 +88,9 @@ class EndPipe(Tile):
     def right(self) -> bool:
         return self.orient == self.Orient.RIGHT
 
+    charset = "╨╞╥╡"
     def to_char(self) -> str:
-        charset = "╨╞╥╡"
-        return charset[self.orient]
+        return EndPipe.charset[self.orient]
 
 class LongPipe(Tile):
     class Orient(IntEnum):
@@ -108,8 +100,8 @@ class LongPipe(Tile):
         self.orient = orient
         self.MAX_ROTATION = 2
 
-    def rotate_right(self):
-        self.orient = 1 - self.orient
+    def rotate_right(self, step: int = 1):
+        return LongPipe(LongPipe.Orient((step % 2) - self.orient))
 
     def up(self) -> bool:
         return self.orient == self.Orient.VERTICAL
@@ -123,9 +115,9 @@ class LongPipe(Tile):
     def right(self) -> bool:
         return self.orient == self.Orient.HORIZONTAL
 
+    charset = "║═"
     def to_char(self) -> str:
-        charset = "║═"
-        return charset[self.orient]
+        return LongPipe.charset[self.orient]
 
 class CornerPipe(Tile):
     class Orient(IntEnum):
@@ -138,8 +130,8 @@ class CornerPipe(Tile):
         self.orient = orient
         self.MAX_ROTATION = 4
 
-    def rotate_right(self):
-        self.orient = (self.orient + 1) % 4
+    def rotate_right(self, step: int = 1):
+        return CornerPipe(CornerPipe.Orient((self.orient + step) % 4))
 
     def up(self) -> bool:
         # 0 or 1
@@ -157,9 +149,9 @@ class CornerPipe(Tile):
         # 1 or 2
         return ((self.orient + 1) % 4) // 2 == 1
 
+    charset = "╝╚╔╗"
     def to_char(self) -> str:
-        charset = "╝╚╔╗"
-        return charset[self.orient]
+        return CornerPipe.charset[self.orient]
 
 class SplitPipe(Tile):
     class Orient(IntEnum):
@@ -172,8 +164,8 @@ class SplitPipe(Tile):
         self.orient = orient
         self.MAX_ROTATION = 4
 
-    def rotate_right(self):
-        self.orient = (self.orient + 1) % 4
+    def rotate_right(self, step: int = 1):
+        return SplitPipe(SplitPipe.Orient((self.orient + step) % 4))
 
     def up(self) -> bool:
         return self.orient != self.Orient.DOWN
@@ -187,6 +179,6 @@ class SplitPipe(Tile):
     def right(self) -> bool:
         return self.orient != self.Orient.LEFT
 
+    charset = "╩╠╦╣"
     def to_char(self) -> str:
-        charset = "╩╠╦╣"
-        return charset[self.orient]
+        return SplitPipe.charset[self.orient]

@@ -7,7 +7,7 @@ def blind_search_help(board: Board, x: int, y: int) -> bool:
     if y == len(board):
         return board.is_solved()
     for _ in range(0, board.at(x, y).MAX_ROTATION):
-        board.at(x, y).rotate()
+        board.rotate(x, y)
         next_x, next_y = next(x, y, len(board))
         if blind_search_help(board, next_x, next_y):
             return True
