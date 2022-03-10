@@ -1,4 +1,5 @@
-from enum import IntEnum
+from copy import copy
+
 
 class ProtoTile:
     def __init__(self):
@@ -6,179 +7,75 @@ class ProtoTile:
         self.right = False
         self.down = False
         self.left = False
-        self.visited = False
 
-    def rotate_right(self) -> 'ProtoTile':
+    def rotate_right(self):
         self.up, self.right, self.down, self.left = self.left, self.up, self.right, self.down
-        return self
 
-class Tile:
-    MAX_ROTATION: int
 
-    def __init__(self):
-        raise NotImplementedError()
-
+class Tile(ProtoTile):
     @staticmethod
     def from_prototile(prototile: ProtoTile) -> 'Tile':
-        sides = prototile.up + prototile.down + prototile.left + prototile.right
-        if sides == 3:
-            if not prototile.up: return SplitPipe(SplitPipe.Orient.DOWN)
-            if not prototile.down: return SplitPipe(SplitPipe.Orient.UP)
-            if not prototile.left: return SplitPipe(SplitPipe.Orient.RIGHT)
-            if not prototile.right: return SplitPipe(SplitPipe.Orient.LEFT)
-        elif sides == 2:
-            if prototile.up and prototile.down: return LongPipe(LongPipe.Orient.VERTICAL)
-            if prototile.left and prototile.right: return LongPipe(LongPipe.Orient.HORIZONTAL)
-            if prototile.up and prototile.left: return CornerPipe(CornerPipe.Orient.TOP_LEFT)
-            if prototile.up and prototile.right: return CornerPipe(CornerPipe.Orient.TOP_RIGHT)
-            if prototile.down and prototile.left: return CornerPipe(CornerPipe.Orient.BOTTOM_LEFT)
-            if prototile.down and prototile.right: return CornerPipe(CornerPipe.Orient.BOTTOM_RIGHT)
-        elif sides == 1:
-            if prototile.up: return EndPipe(EndPipe.Orient.UP)
-            if prototile.down: return EndPipe(EndPipe.Orient.DOWN)
-            if prototile.left: return EndPipe(EndPipe.Orient.LEFT)
-            if prototile.right: return EndPipe(EndPipe.Orient.RIGHT)
+        return Tile(**prototile.__dict__)
 
-        raise Exception("{} sides is illegal".format(sides))
+    def __init__(self,
+                 up: bool,
+                 right: bool,
+                 down: bool,
+                 left: bool,
+                 ):
+        sides = up + right + down + left
+        if sides == 0 or sides == 4:
+            raise Exception("{} sides is illegal".format(sides))
+        self.up = up
+        self.right = right
+        self.down = down
+        self.left = left
+        if self.up and self.down:
+            self.max_rotation = 2
+        elif self.left and self.right:
+            self.max_rotation = 2
+        else:
+            self.max_rotation = 4
+
+    def __str__(self) -> str:
+        sides = self.up + self.down + self.left + self.right
+        if sides == 3:
+            if not self.up:
+                return "╦"
+            elif not self.down:
+                return "╩"
+            elif not self.left:
+                return "╠"
+            else:  # not self.right:
+                return "╣"
+        elif sides == 2:
+            if self.up and self.down:
+                return "║"
+            elif self.left and self.right:
+                return "═"
+            elif self.up and self.left:
+                return "╝"
+            elif self.up and self.right:
+                return "╚"
+            elif self.down and self.left:
+                return "╗"
+            else:  # self.down and self.right:
+                return "╔"
+        else:  # sides == 1
+            if self.up:
+                return "╨"
+            elif self.down:
+                return "╥"
+            elif self.left:
+                return "╡"
+            else:  # self.right
+                return "╞"
 
     def rotate(self, step: int = 1) -> 'Tile':
-        return self.rotate_right(step)
+        other = copy(self)
+        for _ in range(0, step % other.max_rotation):
+            other.rotate_right()
+        return other
 
-    def rotate_right(self, step: int = 1) -> 'Tile':
-        raise NotImplementedError()
-
-    def up(self) -> bool:
-        raise NotImplementedError()
-
-    def down(self) -> bool:
-        raise NotImplementedError()
-
-    def left(self) -> bool:
-        raise NotImplementedError()
-
-    def right(self) -> bool:
-        raise NotImplementedError()
-
-    def to_char(self) -> str:
-        raise NotImplementedError()
-
-class EndPipe(Tile):
-    class Orient(IntEnum):
-        UP = 0
-        RIGHT = 1
-        DOWN = 2
-        LEFT = 3
-
-    def __init__(self, orient: Orient):
-        self.orient = orient
-        self.MAX_ROTATION = 4
-
-    def rotate_right(self, step: int = 1):
-        return EndPipe(EndPipe.Orient((self.orient + step) % 4))
-
-    def up(self) -> bool:
-        return self.orient == self.Orient.UP
-
-    def down(self) -> bool:
-        return self.orient == self.Orient.DOWN
-
-    def left(self) -> bool:
-        return self.orient == self.Orient.LEFT
-
-    def right(self) -> bool:
-        return self.orient == self.Orient.RIGHT
-
-    charset = "╨╞╥╡"
-    def to_char(self) -> str:
-        return EndPipe.charset[self.orient]
-
-class LongPipe(Tile):
-    class Orient(IntEnum):
-        VERTICAL = 0
-        HORIZONTAL = 1
-    def __init__(self, orient: Orient):
-        self.orient = orient
-        self.MAX_ROTATION = 2
-
-    def rotate_right(self, step: int = 1):
-        return LongPipe(LongPipe.Orient((step % 2) - self.orient))
-
-    def up(self) -> bool:
-        return self.orient == self.Orient.VERTICAL
-
-    def down(self) -> bool:
-        return self.orient == self.Orient.VERTICAL
-
-    def left(self) -> bool:
-        return self.orient == self.Orient.HORIZONTAL
-
-    def right(self) -> bool:
-        return self.orient == self.Orient.HORIZONTAL
-
-    charset = "║═"
-    def to_char(self) -> str:
-        return LongPipe.charset[self.orient]
-
-class CornerPipe(Tile):
-    class Orient(IntEnum):
-        TOP_LEFT = 0
-        TOP_RIGHT = 1
-        BOTTOM_RIGHT = 2
-        BOTTOM_LEFT = 3
-
-    def __init__(self, orient: Orient):
-        self.orient = orient
-        self.MAX_ROTATION = 4
-
-    def rotate_right(self, step: int = 1):
-        return CornerPipe(CornerPipe.Orient((self.orient + step) % 4))
-
-    def up(self) -> bool:
-        # 0 or 1
-        return self.orient // 2 == 0
-
-    def down(self) -> bool:
-        # 2 or 3
-        return self.orient // 2 == 1
-
-    def left(self) -> bool:
-        # 0 or 3
-        return ((self.orient + 1) % 4) // 2 == 0
-
-    def right(self) -> bool:
-        # 1 or 2
-        return ((self.orient + 1) % 4) // 2 == 1
-
-    charset = "╝╚╔╗"
-    def to_char(self) -> str:
-        return CornerPipe.charset[self.orient]
-
-class SplitPipe(Tile):
-    class Orient(IntEnum):
-        UP = 0
-        RIGHT = 1
-        DOWN = 2
-        LEFT = 3
-
-    def __init__(self, orient: Orient):
-        self.orient = orient
-        self.MAX_ROTATION = 4
-
-    def rotate_right(self, step: int = 1):
-        return SplitPipe(SplitPipe.Orient((self.orient + step) % 4))
-
-    def up(self) -> bool:
-        return self.orient != self.Orient.DOWN
-
-    def down(self) -> bool:
-        return self.orient != self.Orient.UP
-
-    def left(self) -> bool:
-        return self.orient != self.Orient.RIGHT
-
-    def right(self) -> bool:
-        return self.orient != self.Orient.LEFT
-
-    charset = "╩╠╦╣"
-    def to_char(self) -> str:
-        return SplitPipe.charset[self.orient]
+    def rotate_right(self):
+        self.up, self.right, self.down, self.left = self.left, self.up, self.right, self.down
