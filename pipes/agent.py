@@ -1,4 +1,4 @@
-from board import Board
+from .board import Board
 
 def blind_search(board: Board):
     blind_search_help(board, 0, 0)
@@ -12,7 +12,6 @@ def blind_search_help(board: Board, x: int, y: int) -> bool:
         if blind_search_help(board, next_x, next_y):
             return True
     return False
-
 
 def next(x: int, y: int, size: int):
     if x == size - 1:

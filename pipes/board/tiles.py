@@ -1,6 +1,5 @@
 from copy import copy
 
-
 class ProtoTile:
     def __init__(self):
         self.up = False
