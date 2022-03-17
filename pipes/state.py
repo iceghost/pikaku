@@ -52,6 +52,19 @@ class State:
             other.cursor = cursor
             yield other
 
+    def neighbor_states(self, board: Board) -> Iterator["State"]:
+        for cursor in range(0, self.HEIGHT * self.WIDTH):
+            x = cursor % self.WIDTH
+            y = cursor // self.WIDTH
+            if self.state[cursor] > 0:
+                other = deepcopy(self)
+                other.state[cursor] -= 1
+                yield other
+            if self.state[cursor] < board.at(x, y).MAX_ROTATION - 1:
+                other = deepcopy(self)
+                other.state[cursor] += 1
+                yield other
+
     def apply_to(self, board: Board) -> Board:
         """Apply state to board, generate new board, without modify old board."""
         tiles = [

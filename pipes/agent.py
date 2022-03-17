@@ -1,3 +1,4 @@
+from random import randrange
 from typing import Union
 from .board.tiles import Tile
 from .state import State
@@ -15,6 +16,36 @@ def blind_search(board: Board):
         for next_state in state.next_states(board):
             states.put(next_state)
     return None
+
+
+def hill_climb(board: Board, initial_state: Union[State, None] = None):
+    state = State(board.HEIGHT, board.WIDTH) if initial_state is None else initial_state
+    while True:
+        best_score = None
+        best_neighbor = None
+        for neighbor in state.neighbor_states(board):
+            evaluation = evaluate(neighbor, board)
+            if best_score is None or evaluation < best_score:
+                best_score = evaluation
+                best_neighbor = neighbor
+        if (
+            best_neighbor is None
+            or best_score is None
+            or best_score >= evaluate(state, board)
+        ):
+            return state
+        state = best_neighbor
+
+
+def random_hill_climb(board: Board):
+    while True:
+        seed = [
+            randrange(0, board.at(i % board.WIDTH, i // board.WIDTH).MAX_ROTATION)
+            for i in range(0, board.HEIGHT * board.WIDTH)
+        ]
+        state = hill_climb(board, State(board.HEIGHT, board.WIDTH, seed))
+        if evaluate(state, board) == 0:
+            return state
 
 
 def evaluate(state: State, board: Board):
