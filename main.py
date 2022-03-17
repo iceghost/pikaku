@@ -1,22 +1,13 @@
 from pipes.agent import blind_search
 from pipes.board.random import random as brandom
-from pipes.board.tiles import ProtoTile, Tile
 
 if __name__ == "__main__":
-    tile = ProtoTile()
-    tile.up = True
-    tile.down = True
-    tile.right = True
-    tile = Tile.from_prototile(tile)
-
-    print(tile)
-
-    board = brandom(3)
-
+    board = brandom(3, 3)
     print(board)
     print("\n")
-    blind_search(board)
-    print(board)
+    state = blind_search(board)
+    if state is not None:
+        print(state.apply_to(board))
+    else:
+        raise
     print("\n")
-    print(board.is_solved())
-    print(len(board))

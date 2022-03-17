@@ -1,5 +1,6 @@
 from copy import copy
 
+
 class ProtoTile:
     def __init__(self):
         self.up = False
@@ -16,6 +17,33 @@ class Tile(ProtoTile):
     def from_prototile(prototile: ProtoTile) -> 'Tile':
         return Tile(**prototile.__dict__)
 
+    # top - right - bottom - left
+    CHARSET = [
+        None,
+        "╡",
+        "╥",
+        "╗",
+        "╞",
+        "═",
+        "╔",
+        "╦",
+        "╨",
+        "╝",
+        "║",
+        "╣",
+        "╚",
+        "╩",
+        "╠",
+        None,
+    ]
+
+    CHARSET_DICT = {v: i for (i, v) in enumerate(CHARSET) if v is not None}
+
+    @staticmethod
+    def from_str(raw: str):
+        index = Tile.CHARSET_DICT[raw]
+        return Tile(index // 8, (index % 8) // 4, (index % 4) // 2, index % 2)  # type: ignore
+
     def __init__(self,
                  up: bool,
                  right: bool,
@@ -29,52 +57,34 @@ class Tile(ProtoTile):
         self.right = right
         self.down = down
         self.left = left
-        if self.up and self.down:
-            self.max_rotation = 2
-        elif self.left and self.right:
-            self.max_rotation = 2
+        if sides == 2 and self.up and self.down:
+            self.MAX_ROTATION = 2
+        elif sides == 2 and self.left and self.right:
+            self.MAX_ROTATION = 2  # type:ignore
         else:
-            self.max_rotation = 4
+            self.MAX_ROTATION = 4  # type:ignore
 
     def __str__(self) -> str:
-        sides = self.up + self.down + self.left + self.right
-        if sides == 3:
-            if not self.up:
-                return "╦"
-            elif not self.down:
-                return "╩"
-            elif not self.left:
-                return "╠"
-            else:  # not self.right:
-                return "╣"
-        elif sides == 2:
-            if self.up and self.down:
-                return "║"
-            elif self.left and self.right:
-                return "═"
-            elif self.up and self.left:
-                return "╝"
-            elif self.up and self.right:
-                return "╚"
-            elif self.down and self.left:
-                return "╗"
-            else:  # self.down and self.right:
-                return "╔"
-        else:  # sides == 1
-            if self.up:
-                return "╨"
-            elif self.down:
-                return "╥"
-            elif self.left:
-                return "╡"
-            else:  # self.right
-                return "╞"
+        char = Tile.CHARSET[8 * self.up + 4 *
+                            self.right + 2 * self.down + self.left]
+        if char is not None:
+            return char
+        raise IndexError
+
+    def __repr__(self) -> str:
+        return "Tile({}, {}, {}, {})".format(self.up, self.right, self.down, self.left)
 
     def rotate(self, step: int = 1) -> 'Tile':
         other = copy(self)
-        for _ in range(0, step % other.max_rotation):
-            other.rotate_right()
+        other.rotate_right(step)
         return other
 
-    def rotate_right(self):
-        self.up, self.right, self.down, self.left = self.left, self.up, self.right, self.down
+    def rotate_right(self, step: int = 1):
+        if step <= 0 or step >= self.MAX_ROTATION:
+            raise Exception("cannot rotate {} steps".format(step))
+        if step == 1:
+            self.up, self.right, self.down, self.left = self.left, self.up, self.right, self.down
+        elif step == 2:
+            self.up, self.right, self.down, self.left = self.down, self.left, self.up, self.right
+        elif step == 3:
+            self.up, self.right, self.down, self.left = self.right, self.down, self.left, self.up
