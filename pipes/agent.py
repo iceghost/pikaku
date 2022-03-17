@@ -1,4 +1,4 @@
-from typing import List, Set, Union
+from typing import List, Union
 from .board.tiles import Tile
 from .state import State
 from .board import Board
@@ -6,18 +6,13 @@ from queue import LifoQueue
 
 def blind_search(board: Board):
     states: LifoQueue[State] = LifoQueue()
-    visited: Set[State] = set()
     states.put(State(board.HEIGHT, board.WIDTH))
     while not states.empty():
         state = states.get()
-        visited.add(state)
         if evaluate(state, board) == 0:
-            print("Visited: {}".format(len(visited)))
             return state
         for next_state in state.next_states(board):
-            if next_state not in visited:
-                states.put(next_state)
-    print("Visited: {}".format(len(visited)))
+            states.put(next_state)
     return None
 
 def evaluate(state: State, board: Board):

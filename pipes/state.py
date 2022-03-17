@@ -1,7 +1,6 @@
 from array import array
 from copy import deepcopy
 from typing import List, Union
-
 from .board.tiles import Tile
 from .board import Board
 
@@ -13,8 +12,9 @@ class State:
         if state is None:
             self.state = array('B', [0] * height * width)
         else:
+            assert(len(state) == height * width)
             self.state = array('B', state)
-        self.cursor = (0, 0)
+        self.cursor = 0
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, State):
@@ -32,18 +32,16 @@ class State:
     def at(self, x: int, y: int) -> int:
         return self.state[self.width * y + x]
 
-    def inc_at(self, x: int, y: int) -> 'State':
-        other = deepcopy(self)
-        other.state[other.width * y + x] += 1
-        other.cursor = (x, y)
-        return other
-
     def next_states(self, board: Board):
-        for y in range(0, self.height):
-            for x in range(0, self.width):
-                if self.at(x, y) == board.at(x, y).MAX_ROTATION - 1:
-                    continue
-                yield self.inc_at(x, y)
+        for cursor in range(self.cursor, self.height * self.width):
+            x = cursor % self.width
+            y = cursor // self.width
+            if self.state[cursor] == board.at(x, y).MAX_ROTATION - 1:
+                continue
+            other = deepcopy(self)
+            other.state[cursor] += 1
+            other.cursor = cursor
+            yield other
 
     def apply_to(self, board: Board) -> Board:
         tiles: List[List[Tile]] = []
