@@ -13,7 +13,9 @@ class Board:
 
     @staticmethod
     def from_str(raw: str):
-        return Board([[Tile.from_str(char) for char in line] for line in raw.splitlines()])
+        return Board(
+            [[Tile.from_str(char) for char in line] for line in raw.splitlines()]
+        )
 
     def at(self, x: int, y: int) -> Tile:
         return self.board[y][x]

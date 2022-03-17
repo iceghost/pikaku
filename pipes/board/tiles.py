@@ -9,12 +9,17 @@ class ProtoTile:
         self.left = False
 
     def rotate_right(self):
-        self.up, self.right, self.down, self.left = self.left, self.up, self.right, self.down
+        self.up, self.right, self.down, self.left = (
+            self.left,
+            self.up,
+            self.right,
+            self.down,
+        )
 
 
 class Tile(ProtoTile):
     @staticmethod
-    def from_prototile(prototile: ProtoTile) -> 'Tile':
+    def from_prototile(prototile: ProtoTile) -> "Tile":
         return Tile(**prototile.__dict__)
 
     # top - right - bottom - left
@@ -44,12 +49,13 @@ class Tile(ProtoTile):
         index = Tile.CHARSET_DICT[raw]
         return Tile(index // 8, (index % 8) // 4, (index % 4) // 2, index % 2)  # type: ignore
 
-    def __init__(self,
-                 up: bool,
-                 right: bool,
-                 down: bool,
-                 left: bool,
-                 ):
+    def __init__(
+        self,
+        up: bool,
+        right: bool,
+        down: bool,
+        left: bool,
+    ):
         sides = up + right + down + left
         if sides == 0 or sides == 4:
             raise Exception("{} sides is illegal".format(sides))
@@ -65,8 +71,7 @@ class Tile(ProtoTile):
             self.MAX_ROTATION = 4  # type:ignore
 
     def __str__(self) -> str:
-        char = Tile.CHARSET[8 * self.up + 4 *
-                            self.right + 2 * self.down + self.left]
+        char = Tile.CHARSET[8 * self.up + 4 * self.right + 2 * self.down + self.left]
         if char is not None:
             return char
         raise IndexError
@@ -74,7 +79,7 @@ class Tile(ProtoTile):
     def __repr__(self) -> str:
         return "Tile({}, {}, {}, {})".format(self.up, self.right, self.down, self.left)
 
-    def rotate(self, step: int = 1) -> 'Tile':
+    def rotate(self, step: int = 1) -> "Tile":
         other = copy(self)
         other.rotate_right(step)
         return other
@@ -83,8 +88,23 @@ class Tile(ProtoTile):
         if step <= 0 or step >= self.MAX_ROTATION:
             raise Exception("cannot rotate {} steps".format(step))
         if step == 1:
-            self.up, self.right, self.down, self.left = self.left, self.up, self.right, self.down
+            self.up, self.right, self.down, self.left = (
+                self.left,
+                self.up,
+                self.right,
+                self.down,
+            )
         elif step == 2:
-            self.up, self.right, self.down, self.left = self.down, self.left, self.up, self.right
+            self.up, self.right, self.down, self.left = (
+                self.down,
+                self.left,
+                self.up,
+                self.right,
+            )
         elif step == 3:
-            self.up, self.right, self.down, self.left = self.right, self.down, self.left, self.up
+            self.up, self.right, self.down, self.left = (
+                self.right,
+                self.down,
+                self.left,
+                self.up,
+            )

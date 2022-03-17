@@ -4,6 +4,7 @@ from .state import State
 from .board import Board
 from queue import LifoQueue
 
+
 def blind_search(board: Board):
     states: LifoQueue[State] = LifoQueue()
     states.put(State(board.HEIGHT, board.WIDTH))
@@ -14,6 +15,7 @@ def blind_search(board: Board):
         for next_state in state.next_states(board):
             states.put(next_state)
     return None
+
 
 def evaluate(state: State, board: Board):
     open_ends = 0

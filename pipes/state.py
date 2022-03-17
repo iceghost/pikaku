@@ -9,10 +9,10 @@ class State:
         self.height = height
         self.width = width
         if state is None:
-            self.state = array('B', [0] * height * width)
+            self.state = array("B", [0] * height * width)
         else:
-            assert(len(state) == height * width)
-            self.state = array('B', state)
+            assert len(state) == height * width
+            self.state = array("B", state)
         self.cursor = 0
 
     def __eq__(self, other: object) -> bool:
@@ -26,7 +26,7 @@ class State:
         return True
 
     def __hash__(self) -> int:
-        return sum([value * (4 ** index) for (index, value) in enumerate(self.state)])
+        return sum([value * (4**index) for (index, value) in enumerate(self.state)])
 
     def at(self, x: int, y: int) -> int:
         return self.state[self.width * y + x]
@@ -47,7 +47,6 @@ class State:
             tile.rotate(self.state[i]) if self.state[i] != 0 else tile
             for (i, tile) in enumerate(board.tiles())
         ]
-        return Board([
-            tiles[i:i+board.WIDTH]
-            for i in range(0, len(tiles), board.WIDTH)
-        ])
+        return Board(
+            [tiles[i : i + board.WIDTH] for i in range(0, len(tiles), board.WIDTH)]
+        )
