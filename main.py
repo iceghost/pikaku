@@ -2,7 +2,7 @@ from pipes.agent import blind_search
 from pipes.board.random import random as brandom
 
 if __name__ == "__main__":
-    board = brandom(4, 4)
+    board = brandom(3, 3)
     print(board)
     print("\n")
     state = blind_search(board)

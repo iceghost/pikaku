@@ -1,7 +1,6 @@
 from array import array
 from copy import deepcopy
 from typing import List, Union
-from .board.tiles import Tile
 from .board import Board
 
 
@@ -44,14 +43,11 @@ class State:
             yield other
 
     def apply_to(self, board: Board) -> Board:
-        tiles: List[List[Tile]] = []
-        for y in range(0, board.HEIGHT):
-            row: List[Tile] = []
-            for x in range(0, board.WIDTH):
-                step = self.at(x, y)
-                tile = board.at(x, y)
-                if step != 0:
-                    tile = tile.rotate(step)
-                row.append(tile)
-            tiles.append(row)
-        return Board(tiles)
+        tiles = [
+            tile.rotate(self.state[i]) if self.state[i] != 0 else tile
+            for (i, tile) in enumerate(board.tiles())
+        ]
+        return Board([
+            tiles[i:i+board.WIDTH]
+            for i in range(0, len(tiles), board.WIDTH)
+        ])

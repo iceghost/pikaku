@@ -43,5 +43,6 @@ def random(height: int, width: int) -> 'Board':
 
 def rotate(tile: Tile):
     step = randrange(0, tile.MAX_ROTATION)
-    if step == 0: return tile
+    if step == 0:
+        return tile
     return tile.rotate(step)
