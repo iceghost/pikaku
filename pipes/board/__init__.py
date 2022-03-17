@@ -1,4 +1,4 @@
-from typing import List
+from typing import Iterator, List
 from .tiles import Tile
 
 
@@ -20,7 +20,7 @@ class Board:
     def at(self, x: int, y: int) -> Tile:
         return self.board[y][x]
 
-    def tiles(self):
+    def tiles(self) -> Iterator[Tile]:
         for y in range(0, self.HEIGHT):
             for x in range(0, self.WIDTH):
                 yield self.board[y][x]

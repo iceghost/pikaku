@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import Union
 from .board.tiles import Tile
 from .state import State
 from .board import Board
@@ -19,17 +19,7 @@ def blind_search(board: Board):
 
 def evaluate(state: State, board: Board):
     open_ends = 0
-    tiles: List[List[Tile]] = []
-    for y in range(0, board.HEIGHT):
-        row: List[Tile] = []
-        for x in range(0, board.WIDTH):
-            step = state.at(x, y)
-            tile = board.at(x, y)
-            if step != 0:
-                tile = tile.rotate(step)
-            row.append(tile)
-        tiles.append(row)
-    new_board = Board(tiles)
+    new_board = state.apply_to(board)
     for y in range(0, new_board.HEIGHT):
         for x in range(0, new_board.WIDTH):
             open_ends += open_ends_at(new_board, x, y)
