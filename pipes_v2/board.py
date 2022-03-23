@@ -21,6 +21,16 @@ class Joints:
         self.v_joints = [[Joint.Unknown] * (width + 1) for _ in range(0, height)]
         self.h_joints = [[Joint.Unknown] * (width) for _ in range(0, height + 1)]
 
+        # initialize border for non-wrap pipe game
+        for x in range(0, width + 1):
+            self.v_joints[0][x] = Joint.Unconnected
+            self.v_joints[height-1][x] = Joint.Unconnected
+
+        for y in range(0, height + 1):
+            self.h_joints[y][0] = Joint.Unconnected
+            self.h_joints[y][width-1] = Joint.Unconnected
+
+
     def at(self, x: int, y: int) -> Tuple[Joint, Joint, Joint, Joint]:
         top = self.h_joints[y][x]
         bottom = self.h_joints[y + 1][x]
