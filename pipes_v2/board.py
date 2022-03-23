@@ -1,3 +1,4 @@
+from copy import copy
 from enum import Enum, IntEnum
 from typing import Optional, Tuple
 
@@ -5,11 +6,11 @@ import numpy
 import numpy.typing
 
 
-class PipeType(IntEnum):
-    End = 0
-    Corner = 1
-    Long = 2
-    Split = 3
+class PipeType(Enum):
+    End = "1"
+    Corner = "2a"
+    Long = "2b"
+    Split = "3"
 
 
 def possible_configs(type: PipeType):
@@ -28,7 +29,7 @@ def possible_configs(type: PipeType):
     max_rotation = 2 if type == PipeType.Long else 4
     for _ in range(0, max_rotation):
         yield initial
-        initial.rotate_right()
+        initial = initial.rotate_right()
 
 
 class Joint(IntEnum):
@@ -51,13 +52,57 @@ class JointConfiguration:
         self.left = left
         pass
 
-    def rotate_right(self):
-        self.top, self.right, self.bottom, self.left = (
-            self.left,
-            self.top,
-            self.right,
-            self.bottom,
+    # top - right - bottom - left
+    CHARSET = [
+        None,
+        "╡",
+        "╥",
+        "╗",
+        "╞",
+        "═",
+        "╔",
+        "╦",
+        "╨",
+        "╝",
+        "║",
+        "╣",
+        "╚",
+        "╩",
+        "╠",
+        None,
+    ]
+
+    CHARSET_DICT = {v: i for (i, v) in enumerate(CHARSET) if v is not None}
+
+    @staticmethod
+    def from_str(raw: str):
+        index = JointConfiguration.CHARSET_DICT[raw]
+        return JointConfiguration(
+            Joint(index // 8),
+            Joint((index % 8) // 4),
+            Joint((index % 4) // 2),
+            Joint(index % 2),
         )
+
+    def __str__(self) -> str:
+        if any(joint == Joint.UNKNOWN for joint in self.sides()):
+            return "?"
+        char = JointConfiguration.CHARSET[
+            8 * self.top + 4 * self.right + 2 * self.bottom + self.left
+        ]
+        if char is not None:
+            return char
+        raise IndexError
+
+    def rotate_right(self) -> "JointConfiguration":
+        other = copy(self)
+        other.top, other.right, other.bottom, other.left = (
+            other.left,
+            other.top,
+            other.right,
+            other.bottom,
+        )
+        return other
 
     def is_fit_into(self, config: "JointConfiguration"):
         def fit_joint(this: Joint, that: Joint):
@@ -148,7 +193,17 @@ class Board:
     def __init__(self, height: int, width: int) -> None:
         self.HEIGHT = height
         self.WIDTH = width
-        self.board = numpy.ndarray((height, width), dtype=numpy.uint8)
+        self.board = numpy.array(
+            [
+                ["2a", "1", "1", "1", "1", "1", "1"],
+                ["2b", "2a", "2a", "2b", "3", "3", "2b"],
+                ["3", "3", "1", "3", "2a", "2a", "3"],
+                ["3", "3", "3", "2a", "1", "1", "1"],
+                ["1", "2b", "2a", "2a", "3", "2a", "1"],
+                ["1", "3", "1", "3", "3", "2b", "2a"],
+                ["1", "2a", "1", "3", "3", "2b", "1"],
+            ]
+        )
 
     def at(self, x: int, y: int):
         return PipeType(self.board[y, x])
@@ -180,7 +235,6 @@ class State:
             self.joints.set(x, y, fixed)
 
             # propagate update to nearby pipes
-            something_changed = False
             for i, fixed_side, current_side in zip(
                 range(4), fixed.sides(), prev_config.sides()
             ):
@@ -194,9 +248,9 @@ class State:
                         #     1 -> ( 1,  0) (right)
                         #     3 -> (-1,  0) (left)
                         self.solve_help(x + 2 - i, y, board)
-                    something_changed = True
 
-            return something_changed
+            if self.joints.solved_at(x, y):
+                self.solved[y, x] = True
         except StopIteration:
             return
 
@@ -204,3 +258,14 @@ class State:
         for y in range(0, board.HEIGHT):
             for x in range(0, board.WIDTH):
                 self.solve_help(x, y, board)
+
+
+if __name__ == "__main__":
+    board = Board(7, 7)
+    state = State(7, 7)
+    state.solve(board)
+    print(state.joints.h_joints)
+    for y in range(0, board.HEIGHT):
+        for x in range(0, board.WIDTH):
+            print(state.joints.at(x, y), end="")
+        print()
