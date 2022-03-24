@@ -1,6 +1,6 @@
 from copy import copy
 from enum import Enum, IntEnum
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 import numpy
 import numpy.typing
@@ -190,29 +190,18 @@ class Joints:
 
 
 class Board:
-    def __init__(self, height: int, width: int) -> None:
-        self.HEIGHT = height
-        self.WIDTH = width
-        self.board = numpy.array(
-            [
-                ["2a", "1", "1", "1", "1", "1", "1"],
-                ["2b", "2a", "2a", "2b", "3", "3", "2b"],
-                ["3", "3", "1", "3", "2a", "2a", "3"],
-                ["3", "3", "3", "2a", "1", "1", "1"],
-                ["1", "2b", "2a", "2a", "3", "2a", "1"],
-                ["1", "3", "1", "3", "3", "2b", "2a"],
-                ["1", "2a", "1", "3", "3", "2b", "1"],
-            ]
-        )
+    def __init__(self, board):
+        self.board = board
+        self.HEIGHT, self.WIDTH = self.board.shape
 
-    def at(self, x: int, y: int):
+    def at(self, x: int, y: int) -> PipeType:
         return PipeType(self.board[y, x])
 
 
 class State:
     def __init__(self, height: int, width: int):
         self.joints = Joints(height, width)
-        self.solved = numpy.zeros((height, width), dtype=numpy.bool8)
+        self.solved = numpy.full((height, width), False, dtype=numpy.bool8)
 
     def solve_help(self, x: int, y: int, board: Board):
         prev_config = self.joints.at(x, y)
@@ -258,14 +247,3 @@ class State:
         for y in range(0, board.HEIGHT):
             for x in range(0, board.WIDTH):
                 self.solve_help(x, y, board)
-
-
-if __name__ == "__main__":
-    board = Board(7, 7)
-    state = State(7, 7)
-    state.solve(board)
-    print(state.joints.h_joints)
-    for y in range(0, board.HEIGHT):
-        for x in range(0, board.WIDTH):
-            print(state.joints.at(x, y), end="")
-        print()

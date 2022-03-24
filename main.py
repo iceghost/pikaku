@@ -1,17 +1,17 @@
-from pipes.agent import blind_search, evaluate, hill_climb, random_hill_climb
-from pipes.board.random import random as brandom
-from pipes.state import State
+from pipes_v2.board import Board, State
+from pipes_v2.generate import generate_board
+from pipes_v2.image_proc import download_board
 
 if __name__ == "__main__":
-    board = brandom(10, 10)
-    print(board)
-    print(evaluate(State(board.WIDTH, board.HEIGHT), board))
-    print("\n")
-    state = random_hill_climb(board)
-    if state is not None:
-        new_board = state.apply_to(board)
-        print(new_board)
-        print(evaluate(State(new_board.WIDTH, new_board.HEIGHT), new_board))
-    else:
-        raise
-    print("\n")
+    board = download_board(
+        "https://www.puzzle-pipes.com/screenshots/6fbbfac914b0fe5d0653a4019c3c18ba623be9c08299a.png",
+        25,
+        25,
+    )
+    state = State(board.HEIGHT, board.WIDTH)
+    state.solve(board)
+    print(state.solved)
+    for y in range(0, board.HEIGHT):
+        for x in range(0, board.WIDTH):
+            print(state.joints.at(x, y), end="")
+        print()
