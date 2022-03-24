@@ -1,4 +1,4 @@
-from copy import copy
+from copy import copy, deepcopy
 from enum import Enum, IntEnum
 from typing import List, Optional, Tuple
 
@@ -32,6 +32,17 @@ def possible_configs(type: PipeType):
         initial = initial.rotate_right()
 
 
+def i_to_d(i: int):
+    if i % 2 == 0:
+        # map 0 -> ( 0, -1) (top)
+        #     2 -> ( 0,  1) (bottom)
+        return 0, i - 1
+    else:
+        #     1 -> ( 1,  0) (right)
+        #     3 -> (-1,  0) (left)
+        return 2 - i, 0
+
+
 class Joint(IntEnum):
     UNKNOWN = -1
     UNCONNECTED = 0
@@ -54,7 +65,7 @@ class JointConfiguration:
 
     # top - right - bottom - left
     CHARSET = [
-        None,
+        "?",
         "╡",
         "╥",
         "╗",
@@ -69,7 +80,7 @@ class JointConfiguration:
         "╚",
         "╩",
         "╠",
-        None,
+        "?",
     ]
 
     CHARSET_DICT = {v: i for (i, v) in enumerate(CHARSET) if v is not None}
@@ -131,7 +142,7 @@ class JointConfiguration:
         if key == 3:
             return self.left
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key, value: Joint):
         if key == 0:
             self.top = value
         if key == 1:
@@ -175,16 +186,16 @@ class Joints:
         )
 
     def set(self, x: int, y: int, config: JointConfiguration):
-        if config.top != Joint.UNKNOWN:
+        if config.top != Joint.UNKNOWN and config.top != self.h_joints[y, x]:
             self.h_joints[y, x] = config.top
             self.unknowns -= 1
-        if config.bottom != Joint.UNKNOWN:
+        if config.bottom != Joint.UNKNOWN and config.bottom != self.h_joints[y + 1, x]:
             self.h_joints[y + 1, x] = config.bottom
             self.unknowns -= 1
-        if config.left != Joint.UNKNOWN:
+        if config.left != Joint.UNKNOWN and config.left != self.v_joints[y, x]:
             self.v_joints[y, x] = config.left
             self.unknowns -= 1
-        if config.right != Joint.UNKNOWN:
+        if config.right != Joint.UNKNOWN and config.right != self.v_joints[y, x + 1]:
             self.v_joints[y, x + 1] = config.right
             self.unknowns -= 1
 
@@ -196,6 +207,11 @@ class Board:
 
     def at(self, x: int, y: int) -> PipeType:
         return PipeType(self.board[y, x])
+
+    def tiles(self):
+        for y in range(0, self.HEIGHT):
+            for x in range(0, self.WIDTH):
+                yield self.at(x, y), x, y
 
 
 class State:
@@ -229,14 +245,8 @@ class State:
             ):
                 # if this side is updated
                 if fixed_side != Joint.UNKNOWN and current_side == Joint.UNKNOWN:
-                    if i % 2 == 0:
-                        # map 0 -> ( 0, -1) (top)
-                        #     2 -> ( 0,  1) (bottom)
-                        self.solve_help(x, y + i - 1, board)
-                    else:
-                        #     1 -> ( 1,  0) (right)
-                        #     3 -> (-1,  0) (left)
-                        self.solve_help(x + 2 - i, y, board)
+                    dx, dy = i_to_d(i)
+                    self.solve_help(x + dx, y + dy, board)
 
             if self.joints.solved_at(x, y):
                 self.solved[y, x] = True
@@ -247,3 +257,57 @@ class State:
         for y in range(0, board.HEIGHT):
             for x in range(0, board.WIDTH):
                 self.solve_help(x, y, board)
+
+    def is_solved_help(self, x, y):
+        if self.solved[y, x]:
+            raise StopIteration
+        self.solved[y, x] = True
+
+        config = self.joints.at(x, y)
+
+        visited = 1
+        for i, _ in filter(
+            lambda tup: tup[1] == Joint.CONNECTED, enumerate(config.sides())
+        ):
+            config[i] = Joint.UNCONNECTED
+            self.joints.set(x, y, config)
+            dx, dy = i_to_d(i)
+            visited += self.is_solved_help(x + dx, y + dy)
+        return visited
+
+    def is_solved(self):
+        if self.joints.unknowns != 0:
+            return False
+        # check for loops and connected components
+        other = deepcopy(self)
+        other.solved.fill(False)
+        height, width = other.solved.shape
+        try:
+            visited = other.is_solved_help(0, 0)
+            if visited == height * width:
+                return True
+            return False
+        except StopIteration:
+            return False
+
+    def next_states(self, board: Board):
+        for _, x, y in board.tiles():
+            if self.solved[y, x]:
+                continue
+            prev_config = self.joints.at(x, y)
+            filtered = filter(
+                lambda config: config.is_fit_into(prev_config),
+                possible_configs(board.at(x, y)),
+            )
+            for config in filtered:
+                other = deepcopy(self)
+                other.joints.set(x, y, config)
+                other.solved[y, x] = True
+                yield other
+            break
+
+    def print(self, board: Board):
+        for _, x, y in board.tiles():
+            print(self.joints.at(x, y), end="")
+            if x == board.WIDTH - 1:
+                print()
