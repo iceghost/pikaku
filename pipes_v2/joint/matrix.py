@@ -1,5 +1,4 @@
 import numpy
-from pipes_v2.board import Board
 
 from pipes_v2.joint import Joint
 from pipes_v2.joint.configuration import JointConfiguration
@@ -7,7 +6,12 @@ from pipes_v2.utils.direction import dir_to_dx_dy
 
 
 class JointMatrix:
+    """Represent joints of a board."""
+
     def __init__(self, height: int, width: int):
+        self.HEIGHT = height
+        self.WIDTH = width
+
         # v for vertical, h for horizontal
         self.v_joints = numpy.full((height, width + 1), Joint.UNKNOWN, numpy.int8)
         self.h_joints = numpy.full((height + 1, width), Joint.UNKNOWN, numpy.int8)
@@ -18,10 +22,6 @@ class JointMatrix:
         self.h_joints[0, :] = Joint.UNCONNECTED
         self.h_joints[-1, :] = Joint.UNCONNECTED
 
-        self.unknowns = numpy.count_nonzero(self.v_joints) + numpy.count_nonzero(
-            self.h_joints
-        )
-
     def at(self, x: int, y: int):
         top = self.h_joints[y, x]
         bottom = self.h_joints[y + 1, x]
@@ -29,45 +29,47 @@ class JointMatrix:
         right = self.v_joints[y, x + 1]
         return JointConfiguration(Joint(top), Joint(right), Joint(bottom), Joint(left))
 
-    def solved_at(self, x: int, y: int):
-        config = self.at(x, y)
-        return (
-            config.top != Joint.UNKNOWN
-            and config.bottom != Joint.UNKNOWN
-            and config.left != Joint.UNKNOWN
-            and config.right != Joint.UNKNOWN
-        )
+    def is_solved_at(self, x: int, y: int):
+        return not any(map(Joint.is_unknown, self.at(x, y).joints()))
 
     def set_joint(self, x: int, y: int, dir: int, joint: Joint):
-        """
-        Set the joint in dir direction. Returns boolean indicating if
-        anything changed.
+        """Set the joint in dir direction.
 
-        Ignore unknown joint.
+        Ignore unknown joints.
         """
         if joint.is_unknown():
-            return False
+            return
         dx, dy = dir_to_dx_dy(dir)
         if dx == 0:
             # scale -1,1 to 0,1
             dy = (dy + 1) // 2
-            if self.h_joints[y + dy, x] != joint:
-                self.h_joints[y + dy, x] = joint
-                return True
+            self.h_joints[y + dy, x] = joint
         else:
             dx = (dx + 1) // 2
-            if self.v_joints[y, x + dx] != joint:
-                self.v_joints[y, x + dx] = joint
-                return True
-        return False
+            self.v_joints[y, x + dx] = joint
 
     def set(self, x: int, y: int, config: JointConfiguration):
-        for dir, joint in enumerate(config.joints()):
-            if self.set_joint(x, y, dir, joint):
-                self.unknowns -= 1
+        """Set joints at position.
 
-    def print(self, board: Board):
-        for _, x, y in board.tiles():
-            print(self.at(x, y), end="")
-            if x == board.WIDTH - 1:
-                print()
+        Ignore unknown joints.
+        """
+        for dir, joint in enumerate(config.joints()):
+            self.set_joint(x, y, dir, joint)
+
+    def is_closed(self):
+        """Check if every joint is closed.
+
+        Use with iso-joints.
+        """
+        return (
+            numpy.count_nonzero(self.h_joints) == 0
+            and numpy.count_nonzero(self.v_joints) == 0
+        )
+
+    def __str__(self):
+        return "\n".join(
+            [
+                "".join([str(self.at(x, y)) for x in range(0, self.WIDTH)])
+                for y in range(0, self.HEIGHT)
+            ]
+        )

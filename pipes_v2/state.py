@@ -1,10 +1,9 @@
 from copy import deepcopy
 from typing import Dict, Set, Tuple
 
-import numpy
-
 from pipes_v2.board import Board
 from pipes_v2.joint import Joint
+from pipes_v2.joint.configuration import JointConfiguration
 from pipes_v2.joint.matrix import JointMatrix
 from pipes_v2.utils.direction import dir_to_dx_dy
 
@@ -14,10 +13,14 @@ class Solved(Exception):
 
 
 class Detached(Exception):
+    """Violate rule: "all pipes are connected in a single group" """
+
     pass
 
 
 class Looped(Exception):
+    """Violate rule: "Closed loops are not allowed." """
+
     pass
 
 
@@ -28,7 +31,12 @@ class State:
         self.joints = JointMatrix(height, width)
         # keep track of underlying simplified structure
         self.iso_joints = JointMatrix(height, width)
-        self.solved: Set[Tuple[int, int]] = set()
+
+    def solve(self, board: Board):
+        """Solve pipes with only one orientation possible."""
+        for y in range(0, board.HEIGHT):
+            for x in range(0, board.WIDTH):
+                self.solve_help(x, y, board)
 
     def solve_help(self, x: int, y: int, board: Board):
         prev_config = self.joints.at(x, y)
@@ -60,15 +68,14 @@ class State:
                     dx, dy = dir_to_dx_dy(i)
                     self.solve_help(x + dx, y + dy, board)
 
-            if self.joints.solved_at(x, y):
-                self.solved.add((x, y))
         except StopIteration:
             return
 
-    def solve(self, board: Board):
-        for y in range(0, board.HEIGHT):
-            for x in range(0, board.WIDTH):
-                self.solve_help(x, y, board)
+    def simplify_at(self, x, y):
+        """Check if any rule is violated or if the puzzle is solved. Raise [Looped],
+        [Detached] or [Solved] respectively.
+        """
+        self.simplify_at_help(x, y, set(), -1)
 
     def simplify_at_help(self, x, y, visited: Set[Tuple[int, int]], from_dir):
         if (x, y) in visited:
@@ -89,25 +96,18 @@ class State:
         if any(map(Joint.is_unknown, joints)):
             return
         if len(connecteds) == 0:
-            if (
-                numpy.count_nonzero(self.iso_joints.h_joints)
-                + numpy.count_nonzero(self.iso_joints.v_joints)
-                == 0
-            ):
+            if self.iso_joints.is_closed():
                 raise Solved
             else:
                 raise Detached
         elif len(connecteds) == 1 and from_dir != -1:
             self.iso_joints.set_joint(x, y, from_dir, Joint.UNCONNECTED)
 
-    def simplify_at(self, x, y):
-        self.simplify_at_help(x, y, set(), -1)
-
     def next_pipes(self, next_index=0):
         for index in range(next_index, self.HEIGHT * self.WIDTH):
             x = index % self.WIDTH
             y = index // self.WIDTH
-            if (x, y) in self.solved:
+            if self.joints.is_solved_at(x, y):
                 continue
             yield x, y
 
@@ -117,9 +117,14 @@ class State:
             lambda config: config.is_fit_into(prev_config),
             board.at(x, y).possible_configs(),
         )
-        for config in filtered:
+
+        def clone_and_set(config: JointConfiguration):
             other = deepcopy(self)
             other.joints.set(x, y, config)
             other.iso_joints.set(x, y, config)
-            other.solved.add((x, y))
-            yield other
+            return other
+
+        return map(clone_and_set, filtered)
+
+    def __str__(self):
+        return str(self.joints)

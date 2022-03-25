@@ -1,7 +1,7 @@
 from queue import LifoQueue
 from typing import Tuple
 from pipes_v2.board import Board
-from pipes_v2.state import Solved, State
+from pipes_v2.state import Detached, Looped, Solved, State
 
 
 def blind_search(board: Board):
@@ -18,13 +18,10 @@ def blind_search(board: Board):
             # state.iso_joints.print(board)
         except Solved:
             return state
-        except:
+        except (Looped, Detached):
             continue
 
-        try:
-            x, y = next(state.next_pipes())
-            for state in state.next_configs(x, y, board):
-                states.put((state, x, y))
-        except StopIteration:
-            continue
+        x, y = next(state.next_pipes())
+        for state in state.next_configs(x, y, board):
+            states.put((state, x, y))
     return None

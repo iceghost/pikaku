@@ -8,7 +8,7 @@ def solve(board: Board):
     state = blind_search(board)
     if state is None:
         raise
-    state.joints.print(board)
+    print(state.joints)
 
 
 if __name__ == "__main__":
@@ -18,8 +18,8 @@ if __name__ == "__main__":
     #         solve(board)
     #         break
     board = download_board(
-        "https://www.puzzle-pipes.com/screenshots/b88863086ea87f373cf6fd42cab051f3623da9498ebb5.png",
-        60,
-        40,
+        "https://www.puzzle-pipes.com/screenshots/d1f6571368154581b6a7d4b2e91d1bcd623dd64a1b281.png",
+        15,
+        15,
     )
     print(timeit.timeit("solve(board)", number=1, globals=locals()))

@@ -4,6 +4,10 @@ from pipes_v2.joint import Joint
 
 
 class JointConfiguration:
+    """
+    Abstraction for top - right - bottom - left configuration.
+    """
+
     def __init__(
         self,
         top: Joint = Joint.UNKNOWN,
@@ -58,27 +62,26 @@ class JointConfiguration:
         )
 
     def joints(self):
-        yield self.top
-        yield self.right
-        yield self.bottom
-        yield self.left
+        return [self.top, self.right, self.bottom, self.left]
 
     def __getitem__(self, key):
         if key == 0:
             return self.top
-        if key == 1:
+        elif key == 1:
             return self.right
-        if key == 2:
+        elif key == 2:
             return self.bottom
-        if key == 3:
+        elif key == 3:
             return self.left
+        raise KeyError
 
     def __setitem__(self, key, value: Joint):
         if key == 0:
             self.top = value
-        if key == 1:
+        elif key == 1:
             self.right = value
-        if key == 2:
+        elif key == 2:
             self.bottom = value
-        if key == 3:
+        elif key == 3:
             self.left = value
+        raise KeyError
