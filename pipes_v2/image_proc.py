@@ -6,8 +6,8 @@ from pipes_v2.board import Board, PipeType
 
 
 def image_from_url(url):
-    raw = requests.get(url, stream=True).raw
-    return Image.open(raw)
+    response = requests.get(url, stream=True)
+    return Image.open(response.raw)
 
 
 def convert_bw(image: Image.Image):
