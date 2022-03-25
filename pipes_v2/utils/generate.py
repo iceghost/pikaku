@@ -43,22 +43,22 @@ def generate_board(height: int, width: int) -> "Board":
         [
             [get_tile_type(state.joints.at(x, y)) for x in range(0, width)]
             for y in range(0, height)
-        ] # type:ignore
+        ]  # type:ignore
     )
     return board
 
 
 def get_tile_type(config: JointConfiguration):
-    if any(joint == Joint.UNKNOWN for joint in config.sides()):
+    if any(joint == Joint.UNKNOWN for joint in config.joints()):
         return None
-    sides = config.top + config.bottom + config.left + config.right
-    if sides == 1:
+    joints = config.top + config.bottom + config.left + config.right
+    if joints == 1:
         return PipeType.End
-    if sides == 2:
+    if joints == 2:
         if (config.top and config.bottom) or (config.left and config.right):
             return PipeType.Long
         else:
             return PipeType.Corner
-    if sides == 3:
+    if joints == 3:
         return PipeType.Split
     raise

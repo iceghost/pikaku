@@ -8,10 +8,12 @@ def solve(board: Board):
     state = blind_search(board)
     if state is None:
         raise
+    state.print(board)
 
 
 if __name__ == "__main__":
     with open("input/15x15.txt") as file:
         for url in file.read().splitlines():
             board = download_board(url, 15, 15)
-            print(timeit.repeat("solve(board)", repeat=5, number=1, globals=locals()))
+            solve(board)
+            break

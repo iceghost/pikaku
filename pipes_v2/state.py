@@ -5,17 +5,7 @@ import numpy
 from pipes_v2.board import Board
 from pipes_v2.joint import Joint
 from pipes_v2.joint.matrix import JointMatrix
-
-
-def i_to_d(i: int):
-    if i % 2 == 0:
-        # map 0 -> ( 0, -1) (top)
-        #     2 -> ( 0,  1) (bottom)
-        return 0, i - 1
-    else:
-        #     1 -> ( 1,  0) (right)
-        #     3 -> (-1,  0) (left)
-        return 2 - i, 0
+from pipes_v2.utils.direction import dir_to_dx_dy
 
 
 class State:
@@ -28,28 +18,28 @@ class State:
 
         # filter out infeasible configurations of a pipe
         filtered = filter(
-            lambda config: config.is_fit_into(prev_config),
+            prev_config.is_fit_into,
             board.at(x, y).possible_configs(),
         )
 
-        # check if exist "fixed" side
+        # check if exist "fixed" joint
         try:
-            fixed = filtered.__next__()
+            fixed = next(filtered)
             for config in filtered:
-                for (i, fixed_side, side) in zip(
-                    range(4), fixed.sides(), config.sides()
+                for (i, (fixed_joint, joint)) in enumerate(
+                    zip(fixed.joints(), config.joints())
                 ):
-                    if fixed_side != side:
+                    if fixed_joint != joint:
                         fixed[i] = Joint.UNKNOWN
             self.joints.set(x, y, fixed)
 
             # propagate update to nearby pipes
-            for i, fixed_side, current_side in zip(
-                range(4), fixed.sides(), prev_config.sides()
+            for i, fixed_joint, current_joint in zip(
+                range(4), fixed.joints(), prev_config.joints()
             ):
-                # if this side is updated
-                if fixed_side != Joint.UNKNOWN and current_side == Joint.UNKNOWN:
-                    dx, dy = i_to_d(i)
+                # if this joint is updated
+                if fixed_joint != Joint.UNKNOWN and current_joint == Joint.UNKNOWN:
+                    dx, dy = dir_to_dx_dy(i)
                     self.solve_help(x + dx, y + dy, board)
 
             if self.joints.solved_at(x, y):
@@ -70,12 +60,11 @@ class State:
         config = self.joints.at(x, y)
 
         visited = 1
-        for i, _ in filter(
-            lambda tup: tup[1] == Joint.CONNECTED, enumerate(config.sides())
+        for dir, _ in filter(
+            lambda tup: tup[1].is_connected(), enumerate(config.joints())
         ):
-            config[i] = Joint.UNCONNECTED
-            self.joints.set(x, y, config)
-            dx, dy = i_to_d(i)
+            self.joints.set_joint(x, y, dir, Joint.UNCONNECTED)
+            dx, dy = dir_to_dx_dy(dir)
             visited += self.is_solved_help(x + dx, y + dy)
         return visited
 

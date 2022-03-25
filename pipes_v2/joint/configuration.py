@@ -30,7 +30,7 @@ class JointConfiguration:
         )
 
     def __str__(self) -> str:
-        if any(joint == Joint.UNKNOWN for joint in self.sides()):
+        if any(joint == Joint.UNKNOWN for joint in self.joints()):
             return "?"
         char = JointConfiguration.CHARSET[
             8 * self.top + 4 * self.right + 2 * self.bottom + self.left
@@ -50,17 +50,14 @@ class JointConfiguration:
         return other
 
     def is_fit_into(self, config: "JointConfiguration"):
-        def fit_joint(this: Joint, that: Joint):
-            return this == that or this == Joint.UNKNOWN or that == Joint.UNKNOWN
-
         return (
-            fit_joint(self.top, config.top)
-            and fit_joint(self.right, config.right)
-            and fit_joint(self.bottom, config.bottom)
-            and fit_joint(self.left, config.left)
+            self.top.is_fit_to(config.top)
+            and self.right.is_fit_to(config.right)
+            and self.bottom.is_fit_to(config.bottom)
+            and self.left.is_fit_to(config.left)
         )
 
-    def sides(self):
+    def joints(self):
         yield self.top
         yield self.right
         yield self.bottom

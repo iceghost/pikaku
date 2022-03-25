@@ -7,10 +7,13 @@ class Joint(IntEnum):
     CONNECTED = 1
 
     def is_connected(self):
-        return self == Joint.CONNECTED
+        return self is Joint.CONNECTED
 
     def is_unconnected(self):
-        return self == Joint.UNCONNECTED
+        return self is Joint.UNCONNECTED
 
     def is_unknown(self):
-        return self == Joint.UNKNOWN
+        return self is Joint.UNKNOWN
+
+    def is_fit_to(self, other: "Joint"):
+        return self is other or self is Joint.UNKNOWN or other is Joint.UNKNOWN
