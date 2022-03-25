@@ -1,4 +1,5 @@
 import numpy
+from pipes_v2.board import Board
 
 from pipes_v2.joint import Joint
 from pipes_v2.joint.configuration import JointConfiguration
@@ -64,3 +65,9 @@ class JointMatrix:
         for dir, joint in enumerate(config.joints()):
             if self.set_joint(x, y, dir, joint):
                 self.unknowns -= 1
+
+    def print(self, board: Board):
+        for _, x, y in board.tiles():
+            print(self.at(x, y), end="")
+            if x == board.WIDTH - 1:
+                print()
