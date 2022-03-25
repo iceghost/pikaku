@@ -1,4 +1,8 @@
-from .board import Board, Joint, JointConfiguration, PipeType, State
+from pipes_v2.joint import Joint
+from pipes_v2.joint.configuration import JointConfiguration
+from pipes_v2.joint.type import PipeType
+from pipes_v2.state import State
+from pipes_v2.board import Board
 from random import shuffle
 
 

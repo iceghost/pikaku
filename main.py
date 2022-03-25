@@ -1,7 +1,6 @@
 from pipes_v2.agent import blind_search
-from pipes_v2.board import Board, PipeType, State
-from pipes_v2.generate import generate_board
-from pipes_v2.image_proc import download_board
+from pipes_v2.board import Board
+from pipes_v2.utils.image_proc import download_board
 import timeit
 
 

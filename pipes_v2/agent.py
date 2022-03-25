@@ -1,5 +1,6 @@
 from queue import LifoQueue
-from pipes_v2.board import Board, State
+from pipes_v2.board import Board
+from pipes_v2.state import State
 
 
 def blind_search(board: Board):
