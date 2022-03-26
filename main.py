@@ -13,14 +13,14 @@ def solve(board: Board):
     state = blind_search(board)
     if state is None:
         raise
-    # print(state.joints)
+    print(state.joints)
 
 
 if __name__ == "__main__":
-    # board = download_board(
-    #     "https://www.puzzle-pipes.com/screenshots/d1f6571368154581b6a7d4b2e91d1bcd623dd64a1b281.png",
-    #     15,
-    #     15,
-    # )
-    board = generate_board(25, 25)
+    board = download_board(
+        "https://www.puzzle-pipes.com/screenshots/99b4ed7ba120036f5b5afac51206910b623e78d639129.png",
+        60,
+        40,
+    )
+    # board = generate_board(40, 60)
     print(timeit.timeit("solve(board)", number=1, globals=locals()))

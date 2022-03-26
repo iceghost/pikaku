@@ -9,7 +9,7 @@ def blind_search(board: Board):
     states.put((State(board.HEIGHT, board.WIDTH), 0, 0))
     while not states.empty():
         state, x, y = states.get()
-        # state.solve(board)
+        state.solve(board)
         # print("At {}, {}".format(x, y))
         # state.joints.print(board)
         # print()

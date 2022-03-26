@@ -73,7 +73,8 @@ class JointConfiguration:
             return self.bottom
         elif key == 3:
             return self.left
-        raise KeyError
+        else:
+            raise KeyError
 
     def __setitem__(self, key, value: Joint):
         if key == 0:
@@ -84,4 +85,5 @@ class JointConfiguration:
             self.bottom = value
         elif key == 3:
             self.left = value
-        raise KeyError
+        else:
+            raise KeyError
