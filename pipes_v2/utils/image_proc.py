@@ -34,10 +34,7 @@ def categorize_tile(tile: Image.Image):
         (TILE_SIZE // 2, 4 * TILE_SIZE // 5),
         (TILE_SIZE // 5, TILE_SIZE // 2),
     ]
-    has_pipes = [*map(
-        lambda pos: tile.getpixel(pos) == 255,
-        positions
-    )]
+    has_pipes = [*map(lambda pos: tile.getpixel(pos) == 255, positions)]
     if sum(has_pipes) == 1:
         return PipeType.End
     if sum(has_pipes) == 3:
@@ -52,7 +49,8 @@ def categorize_tile(tile: Image.Image):
 def download_board(url, height, width):
     image = image_from_url(url)
     image = convert_bw(image)
-    return Board(numpy.array([*map(
-        categorize_tile,
-        generate_tiles(image, height, width)
-    )]).reshape((height, width)))
+    return Board(
+        numpy.array(
+            [*map(categorize_tile, generate_tiles(image, height, width))]
+        ).reshape((height, width))
+    )
