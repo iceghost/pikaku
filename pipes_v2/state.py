@@ -117,14 +117,16 @@ class State:
             lambda config: config.is_fit_into(prev_config),
             board.at(x, y).possible_configs(),
         )
+        return filtered
 
+    def next_states(self, x, y, board: Board):
         def clone_and_set(config: JointConfiguration):
             other = deepcopy(self)
             other.joints.set(x, y, config)
             other.iso_joints.set(x, y, config)
             return other
 
-        return map(clone_and_set, filtered)
+        return map(clone_and_set, self.next_configs(x, y, board))
 
     def __str__(self):
         return str(self.joints)

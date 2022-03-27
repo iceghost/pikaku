@@ -1,5 +1,5 @@
 import logging
-from pipes_v2.agent import blind_search
+from pipes_v2.agent import blind_search, heuristic_search
 from pipes_v2.board import Board
 from pipes_v2.utils.generate import generate_board
 from pipes_v2.utils.image_proc import download_board
@@ -9,18 +9,26 @@ import timeit
 logging.basicConfig(level=logging.INFO)
 
 
-def solve(board: Board):
+def blind_solve(board: Board):
     state = blind_search(board)
     if state is None:
         raise
     print(state.joints)
 
 
+def heuristic_solve(board: Board):
+    state = heuristic_search(board)
+    if state is None:
+        raise
+    print(state.joints)
+
+
 if __name__ == "__main__":
-    board = download_board(
-        "https://www.puzzle-pipes.com/screenshots/99b4ed7ba120036f5b5afac51206910b623e78d639129.png",
-        60,
-        40,
-    )
-    # board = generate_board(40, 60)
-    print(timeit.timeit("solve(board)", number=1, globals=locals()))
+    # board = download_board(
+    #     "https://www.puzzle-pipes.com/screenshots/62d5c0adc7cdca26790fce8ea96cdee5623c4d9b521e6.png",
+    #     15,
+    #     15,
+    # )
+    board = generate_board(30, 30)
+    print(timeit.timeit("blind_solve(board)", number=1, globals=locals()))
+    print(timeit.timeit("heuristic_solve(board)", number=1, globals=locals()))
