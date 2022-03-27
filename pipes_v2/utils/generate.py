@@ -1,5 +1,5 @@
-from typing import Set, Tuple
-from random import shuffle
+from typing import Optional, Set, Tuple
+from random import Random, randrange, shuffle
 
 import sys
 import numpy
@@ -13,12 +13,14 @@ from pipes_v2.board import Board
 from pipes_v2.utils.direction import dir_to_dx_dy
 
 
-def generate_board(height: int, width: int) -> "Board":
+def generate_board(height: int, width: int, seed: Optional[int] = None) -> "Board":
+    seed = seed if seed is not None else randrange(sys.maxsize)
+    random = Random(seed)
     sys.setrecursionlimit(max(1000, height * width))
     while True:
         try:
             state = State(height, width)
-            visit(state, 0, 0, set())
+            visit(state, 0, 0, set(), random)
             board = Board(
                 numpy.array(
                     [
@@ -27,14 +29,19 @@ def generate_board(height: int, width: int) -> "Board":
                     ],  # type:ignore
                 )
             )
-            logging.info("Generated board:\n%s", str(state))
+            logging.info("Generated board of seed %i:\n%s", seed, str(state))
             return board
         except InvalidTile:
             continue
 
 
 def visit(
-    state: State, x: int, y: int, visited: Set[Tuple[int, int]], from_dir=-1
+    state: State,
+    x: int,
+    y: int,
+    visited: Set[Tuple[int, int]],
+    random: Random,
+    from_dir=-1,
 ) -> bool:
     if x < 0 or y < 0 or x >= state.WIDTH or y >= state.HEIGHT or (x, y) in visited:
         return False
@@ -43,11 +50,11 @@ def visit(
         state.joints.set_joint(x, y, from_dir, Joint.CONNECTED)
 
     dirs = list(enumerate(state.joints.at(x, y).joints()))
-    shuffle(dirs)
+    random.shuffle(dirs)
     dirs = filter(lambda tup: tup[1].is_unknown(), dirs)
     for dir, _ in dirs:
         dx, dy = dir_to_dx_dy(dir)
-        if not visit(state, x + dx, y + dy, visited, (dir + 2) % 4):
+        if not visit(state, x + dx, y + dy, visited, random, (dir + 2) % 4):
             state.joints.set_joint(x, y, dir, Joint.UNCONNECTED)
 
     return True
