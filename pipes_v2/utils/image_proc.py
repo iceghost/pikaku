@@ -1,3 +1,4 @@
+import logging
 from PIL import Image
 import numpy
 import requests
@@ -49,8 +50,10 @@ def categorize_tile(tile: Image.Image):
 def download_board(url, height, width):
     image = image_from_url(url)
     image = convert_bw(image)
-    return Board(
+    board = Board(
         numpy.array(
             [*map(categorize_tile, generate_tiles(image, height, width))]
         ).reshape((height, width))
     )
+    logging.info("Downloaded board from %s:\n%s", url, str(board))
+    return board
