@@ -10,3 +10,9 @@ class Board:
 
     def at(self, x: int, y: int) -> PipeType:
         return PipeType(self.board[y, x])
+
+    def __str__(self):
+        return "\n".join(
+            " ".join(self.at(x, y).value.ljust(2) for x in range(0, self.WIDTH))
+            for y in range(0, self.HEIGHT)
+        )
