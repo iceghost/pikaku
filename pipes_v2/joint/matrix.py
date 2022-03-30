@@ -66,6 +66,14 @@ class JointMatrix:
             and numpy.count_nonzero(self.v_joints) == 0
         )
 
+    def count_unsolved(self):
+        count = 0
+        for y in range(0, self.HEIGHT):
+            for x in range(0, self.WIDTH):
+                if not self.is_solved_at(x, y):
+                    count += 1
+        return count
+
     def __str__(self):
         return "\n".join(
             [
