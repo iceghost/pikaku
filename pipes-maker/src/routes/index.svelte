@@ -1,3 +1,7 @@
+<script context="module">
+  export const prerender = false;
+</script>
+
 <script>
   import SmallCaps from '../lib/SmallCaps.svelte';
 
@@ -6,23 +10,23 @@
   import { parse } from '$lib/board';
   import Pipe from '$lib/Pipe.svelte';
   import RowLabels from '$lib/RowLabels.svelte';
+  import JointColumnLabels from '$lib/JointColumnLabels.svelte';
+  import JointPipe from '$lib/JointPipe.svelte';
+  import { writable } from 'svelte/store';
+  import { setContext } from 'svelte';
 
-  let raw = `1 2a 2a 1
-2a 3 3 2a
-2a 3 3 2a
-0 0 1 1`;
-  let height = 4;
-  let width = 4;
+  let raw = `1 1 1 2a 1
+2b 2a 3 3 3
+3 2b 3 1 2b
+2b 2a 3 3 1
+1 2a 1 2a 1`;
+  let height = 5;
+  let width = 5;
 
-  $: indices = new Array(height * width);
+  const board = writable(undefined);
+  setContext('board', board);
 
-  $: numbers = [...Array(width).keys()];
-
-  $: characters = numbers.map((x) =>
-    String.fromCharCode('A'.charCodeAt(0) + x)
-  );
-
-  $: board = parse(raw, height, width);
+  $: $board = parse(raw, height, width);
 </script>
 
 <div>
@@ -61,33 +65,54 @@
   </form>
 </div>
 
-<div
-  class="mt-5 grid justify-center auto-rows-fr auto-cols-fr gap-1"
-  style:grid-template-columns="repeat({width + 2}, min-content)"
->
+<div>
   <div
-    style:grid-column="1"
-    style:grid-row="1"
-    class="border-l-2 border-t-2 rounded-md border-gray-100"
-  />
-  <div
-    style:grid-column={width + 2}
-    style:grid-row={height + 2}
-    class="border-r-2 border-b-2 rounded-md border-gray-100"
-  />
-  <ColumnLabels {width} row="1" />
-  <ColumnLabels {width} row={height + 2} />
-  <RowLabels {height} column="1" />
-  <RowLabels {height} column={width + 2} />
-  <div
-    style:grid-template-rows="subgrid"
-    style:grid-template-columns="subgrid"
-    style:grid-column="2 / span {width}"
-    style:grid-row="2 / span {height}"
-    class="grid"
+    class="mt-5 grid justify-center auto-rows-fr auto-cols-fr gap-1"
+    style:grid-template-columns="repeat({width + 2}, min-content)"
   >
-    {#each board.pipes as pipe, i}
-      <Pipe {pipe} index={indices[i]} />
-    {/each}
+    <div
+      style:grid-column="1"
+      style:grid-row="1"
+      class="border-l-2 border-t-2 rounded-md border-gray-100"
+    />
+    <div
+      style:grid-column={width + 2}
+      style:grid-row={height + 2}
+      class="border-r-2 border-b-2 rounded-md border-gray-100"
+    />
+    <ColumnLabels {width} row="1" />
+    <ColumnLabels {width} row={height + 2} />
+    <RowLabels {height} column="1" />
+    <RowLabels {height} column={width + 2} />
+    <div
+      style:grid-template-rows="subgrid"
+      style:grid-template-columns="subgrid"
+      style:grid-column="2 / span {width}"
+      style:grid-row="2 / span {height}"
+      class="grid"
+    >
+      {#each $board.pipes as row, y}
+        {#each row as pipe, x}
+          <Pipe bind:pipe />
+        {/each}
+      {/each}
+    </div>
   </div>
+  <table class="border-collapse rounded-md mb-5">
+    <JointColumnLabels {width} />
+    {#each $board.pipes as row, y}
+      <tr>
+        <td>
+          <span class="px-4 text-2xl text-gray-400">{y + 1}</span>
+        </td>
+        {#each row as pipe, x}
+          <JointPipe bind:pipe {x} {y} />
+        {/each}
+        <td>
+          <span class="px-4 text-2xl text-gray-400">{y + 1}</span>
+        </td>
+      </tr>
+    {/each}
+    <JointColumnLabels {width} />
+  </table>
 </div>

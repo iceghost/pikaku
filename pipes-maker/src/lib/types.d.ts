@@ -1,9 +1,10 @@
 export interface Board {
-  pipes: Pipe[];
+  pipes: Pipe[][];
   height: number;
   width: number;
 }
 
 export interface Pipe {
   joints: [boolean, boolean, boolean, boolean];
+  colorIndex: number;
 }

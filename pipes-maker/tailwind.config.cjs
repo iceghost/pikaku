@@ -6,6 +6,12 @@ const config = {
       fontFamily: {
         mono: ['Latin Modern Mono', 'monospace'],
       },
+      gridTemplateRows: {
+        subgrid: 'subgrid'
+      },
+      gridTemplateColumns: {
+        subgrid: 'subgrid'
+      }
     },
   },
 

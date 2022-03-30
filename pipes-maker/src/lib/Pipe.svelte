@@ -2,16 +2,14 @@
   /** @type {import("$lib/types").Pipe}*/
   export let pipe;
 
-  export let index = 0;
-  $: {
-    const [top, right, bottom, left] = pipe.joints;
-    index = (top ? 8 : 0) + (right ? 4 : 0) + (bottom ? 2 : 0) + (left ? 1 : 0);
-  }
+  $: index = pipe.joints.reduce(
+    (acc, x, i) => acc + 2 ** (3 - i) * (x ? 1 : 0),
+    0
+  );
 
   function clickHandler() {
     const [top, right, bottom, left] = pipe.joints;
-    pipe.joints = [left, top, right, bottom];
-    pipe = pipe;
+    pipe = { ...pipe, joints: [left, top, right, bottom] };
   }
 
   const colors = [
@@ -21,17 +19,16 @@
     'bg-green-50 border-green-500',
     'bg-red-50 border-red-500',
   ];
-  let colorIndex = 0;
 
   function rightHandler(e) {
     e.preventDefault();
-    colorIndex = (colorIndex + 1) % colors.length;
+    pipe = { ...pipe, colorIndex: (pipe.colorIndex + 1) % colors.length };
   }
 </script>
 
 <div
   class="{colors[
-    colorIndex
+    pipe.colorIndex
   ]} h-10 border-[1.5px] border-gray-200 rounded-md bg-contain aspect-square"
   style:background-image="url('pipe-{index}.png')"
   on:click={clickHandler}

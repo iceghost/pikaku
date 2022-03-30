@@ -7,31 +7,34 @@
  * @returns {import("$lib/types").Board}
  */
 export function parse(str, height, width) {
-  /** @type {import("$lib/types").Pipe[]} */
+  /** @type {import("$lib/types").Pipe[][]} */
   const pipes = [];
   for (let line of str.split('\n')) {
+    /** @type {import("$lib/types").Pipe[]} */
+    const row = [];
     line = line.trim();
     for (const code of line.split(' ')) {
       switch (code) {
         case '0':
-          pipes.push({ joints: [false, false, false, false] });
+          row.push({ joints: [false, false, false, false], colorIndex: 0});
           break;
         case '1':
-          pipes.push({ joints: [true, false, false, false] });
+          row.push({ joints: [true, false, false, false], colorIndex: 0});
           break;
         case '2a':
-          pipes.push({ joints: [true, true, false, false] });
+          row.push({ joints: [true, true, false, false], colorIndex: 0});
           break;
         case '2b':
-          pipes.push({ joints: [true, false, true, false] });
+          row.push({ joints: [true, false, true, false], colorIndex: 0});
           break;
         case '3':
-          pipes.push({ joints: [true, true, true, false] });
+          row.push({ joints: [true, true, true, false], colorIndex: 0});
           break;
         default:
           console.warn('unknown code');
       }
     }
+    pipes.push(row);
   }
   return { pipes, height, width };
 }
