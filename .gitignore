@@ -1,2 +1,3 @@
 **/__pycache__
 .venv/
+bench_results.txt
