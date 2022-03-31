@@ -22,6 +22,14 @@ class JointMatrix:
         self.h_joints[0, :] = Joint.UNCONNECTED
         self.h_joints[-1, :] = Joint.UNCONNECTED
 
+    def __hash__(self) -> int:
+        return hash((self.v_joints.tobytes(), self.h_joints.tobytes()))
+
+    def __eq__(self, __o: "JointMatrix") -> bool:
+        return numpy.array_equal(self.v_joints, __o.v_joints) and numpy.array_equal(
+            self.h_joints, __o.h_joints
+        )
+
     def at(self, x: int, y: int):
         top = self.h_joints[y, x]
         bottom = self.h_joints[y + 1, x]

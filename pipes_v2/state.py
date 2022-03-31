@@ -32,6 +32,12 @@ class State:
         # keep track of underlying simplified structure
         self.iso_joints = JointMatrix(height, width)
 
+    def __hash__(self) -> int:
+        return hash(self.joints)
+
+    def __eq__(self, __o: "State") -> bool:
+        return self.joints == __o.joints
+
     def solve(self, board: Board):
         """Solve pipes with only one orientation possible."""
         for y in range(0, board.HEIGHT):
