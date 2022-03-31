@@ -49,7 +49,7 @@ def heuristic_search(board: Board):
 
         x, y = min(
             state.next_pipes(),
-            key=lambda tup: sum(1 for _ in state.next_configs(tup[0], tup[1], board)),
+            key=lambda tup: len(list(state.next_configs(tup[0], tup[1], board))),
         )
         for next_state in state.next_states(x, y, board):
             queue.put((next_state, x, y))
