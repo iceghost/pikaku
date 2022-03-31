@@ -7,9 +7,8 @@ import logging
 
 from pipes_v2.joint import Joint
 from pipes_v2.joint.configuration import JointConfiguration
-from pipes_v2.joint.type import PipeType
 from pipes_v2.state import State
-from pipes_v2.board import Board
+from pipes_v2.board import Board, PipeType
 from pipes_v2.utils.direction import dir_to_dx_dy
 
 
