@@ -20,7 +20,13 @@ def generate_board(height: int, width: int, seed: Optional[int] = None) -> "Boar
     while True:
         try:
             state = State(height, width)
-            visit(state, 0, 0, set(), random)
+            visit(
+                state,
+                random.randrange(0, width),
+                random.randrange(0, height),
+                set(),
+                random,
+            )
             board = Board(
                 numpy.array(
                     [
