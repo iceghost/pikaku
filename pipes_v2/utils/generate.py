@@ -30,7 +30,8 @@ def generate_board(height: int, width: int, seed: Optional[int] = None) -> "Boar
                 )
             )
             logging.info("Generated board of seed %i", seed)
-            logging.debug(str(state.joints))
+            logging.debug("Goal: \n" + str(state.joints))
+            logging.debug("Board: \n" + str(board))
             return board
         except InvalidTile:
             continue

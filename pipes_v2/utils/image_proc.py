@@ -55,6 +55,6 @@ def download_board(url, height, width):
             [*map(categorize_tile, generate_tiles(image, height, width))]
         ).reshape((height, width))
     )
-    logging.info("Downloaded board from %s:", url)
-    logging.debug(str(board))
+    logging.info("Downloaded board from %s", url)
+    logging.debug("Board: \n" + str(board))
     return board
