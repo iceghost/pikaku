@@ -48,6 +48,11 @@ def categorize_tile(tile: Image.Image):
 
 
 def download_board(url, height, width):
+    """Download board from www.puzzle-pipes.com.
+
+    Please use dark mode and copy screenshot link under the share button.
+    Only works with 5x5 and up."""
+
     image = image_from_url(url)
     image = convert_bw(image)
     board = Board(
