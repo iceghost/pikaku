@@ -55,7 +55,7 @@ def heuristic_search(board: Board):
             queue.put((next_state, x, y))
 
 
-def fast_search(board: Board):
+def improved_search(board: Board):
     queue: LifoQueue[Tuple[State, int, int]] = LifoQueue()
     queue.put((State(board.HEIGHT, board.WIDTH), 0, 0))
     explored = 0
