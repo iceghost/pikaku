@@ -7,16 +7,21 @@ from pipes_v2.state import Detached, Looped, Solved, State
 
 def blind_search(board: Board):
     states: LifoQueue[Tuple[State, int, int]] = LifoQueue()
+    explored = 0
     states.put((State(board.HEIGHT, board.WIDTH), 0, 0))
     while not states.empty():
         state, x, y = states.get()
-        state.solve(board)
+        explored += 1
+        # if state in visited:
+        #     raise
+        # visited.add(state)
 
-        logging.debug("joints: \n{}".format(state.joints))
+        # logging.debug("joints: \n{}".format(state.joints))
         try:
             state.simplify_at(x, y)
-            logging.debug("iso-joints: \n{}".format(state.iso_joints))
+            # logging.debug("iso-joints: \n{}".format(state.iso_joints))
         except Solved:
+            logging.info("explored: {}".format(explored))
             return state
         except (Looped, Detached):
             continue
@@ -29,12 +34,15 @@ def blind_search(board: Board):
 def heuristic_search(board: Board):
     queue: LifoQueue[Tuple[State, int, int]] = LifoQueue()
     queue.put((State(board.HEIGHT, board.WIDTH), 0, 0))
+    explored = 0
     while not queue.empty():
         state, x, y = queue.get()
+        explored += 1
 
         try:
             state.simplify_at(x, y)
         except Solved:
+            logging.info("explored: {}".format(explored))
             return state
         except (Looped, Detached):
             continue
@@ -50,18 +58,21 @@ def heuristic_search(board: Board):
 def fast_search(board: Board):
     queue: LifoQueue[Tuple[State, int, int]] = LifoQueue()
     queue.put((State(board.HEIGHT, board.WIDTH), 0, 0))
+    explored = 0
     while not queue.empty():
         state, x, y = queue.get()
+        explored += 1
         state.solve(board)
 
         try:
             state.simplify_at(x, y)
         except Solved:
+            logging.info("explored: {}".format(explored))
             return state
         except (Looped, Detached):
             continue
 
-        next_x, next_y = next(state.next_pipes(y * board.WIDTH + x))
+        next_x, next_y = next(state.next_pipes())
         for next_state in state.next_states(next_x, next_y, board):
             queue.put((next_state, next_x, next_y))
 
