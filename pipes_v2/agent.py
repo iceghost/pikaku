@@ -77,38 +77,26 @@ def improved_search(board: Board):
             queue.put((next_state, next_x, next_y))
 
 
-# def verbose_blind_search(board: Board, logger: Optional[Logger] = None):
-#     logger = logger or logging.getLogger("__void")
-#     states: LifoQueue[Tuple[State, int, int]] = LifoQueue()
-#     states.put((State(board.HEIGHT, board.WIDTH), 0, 0))
-#     while not states.empty():
-#         state, x, y = states.get()
-#         logger.debug("Tried a configuration at ({: >2}, {: >2})".format(x, y))
-#         yield state
+def demo_search(board: Board):
+    queue: LifoQueue[Tuple[State, int, int]] = LifoQueue()
+    queue.put((State(board.HEIGHT, board.WIDTH), 0, 0))
+    while not queue.empty():
+        state, x, y = queue.get()
+        yield state, (x, y, "Try a configuration at ({: >2}, {: >2})".format(x, y))
+        # state.solve(board)
+        # yield state, (None, None, "Solve easy pipes")
+        try:
+            state.simplify_at(x, y)
+        except Solved:
+            yield state, (None, None, "Solved")
+            return
+        except Looped:
+            yield state, (x, y, "Looped near ({: >2}, {: >2})".format(x, y))
+            continue
+        except Detached:
+            yield state, (x, y, "Detached near ({: >2}, {: >2})".format(x, y))
+            continue
 
-#         # state.solve(board)
-#         # logger.info("Solves pipes with only one configuration")
-#         # yield state
-#         try:
-#             state.simplify_at(x, y)
-#         except Solved:
-#             logger.debug("Board has been solved")
-#             yield state
-#             return state
-#         except Looped:
-#             logger.debug("Loop detected at ({: >2}, {: >2})".format(x, y))
-#             yield state
-#             continue
-#         except Detached:
-#             logger.debug("Multiple groups detected at ({: >2}, {: >2})".format(x, y))
-#             yield state
-#             continue
-
-#         x, y = next(state.next_pipes())
-#         if sum(1 for _ in state.next_configs(x, y, board)) == 0:
-#             logger.debug("Dead-end at ({: >2}, {: >2})".format(x, y))
-#             yield state
-#             continue
-
-#         for state in state.next_states(x, y, board):
-#             states.put((state, x, y))
+        next_x, next_y = next(state.next_pipes())
+        for next_state in state.next_states(next_x, next_y, board):
+            queue.put((next_state, next_x, next_y))
