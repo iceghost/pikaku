@@ -39,3 +39,7 @@ $ python3 bench.py
 ## demo.py
 
 Simple algorithm walkthrough.
+
+```bash
+$ python3 demo.py
+```
